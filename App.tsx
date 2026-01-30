@@ -21,8 +21,8 @@ function App() {
     const { nativeEvent } = syntheticEvent;
     console.warn('WebView error: ', nativeEvent);
     Alert.alert(
-      'Connection Error',
-      `Failed to load Boss Lotto website.\nError: ${nativeEvent.description || 'Unknown error'}`,
+      "There's no internet",
+      "Please connect to the internet to use Boss Lotto.",
       [{ text: 'Retry', onPress: handleRetry }]
     );
     setWebViewError(true);
@@ -48,9 +48,12 @@ function App() {
       <View style={styles.container}>
         {webViewError ? (
           <View style={styles.errorContainer}>
-            <Text style={styles.errorTitle}>Connection Error</Text>
+            <View style={styles.logoCircle}>
+              <Text style={styles.logoText}>BOSS</Text>
+            </View>
+            <Text style={styles.errorTitle}>There's no internet</Text>
             <Text style={styles.errorMessage}>
-              Unable to load Boss Lotto. Please check your internet connection and try again.
+              Please connect to the internet to use Boss Lotto.
             </Text>
             <TouchableOpacity style={styles.retryButton} onPress={handleRetry}>
               <Text style={styles.retryButtonText}>Retry</Text>
@@ -95,6 +98,32 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: 20,
     backgroundColor: '#000000',
+  },
+  logoCircle: {
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    backgroundColor: '#FFD700',
+    borderWidth: 4,
+    borderColor: '#B8860B',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 30,
+    shadowColor: '#FFD700',
+    shadowOffset: {
+      width: 0,
+      height: 0,
+    },
+    shadowOpacity: 0.5,
+    shadowRadius: 15,
+    elevation: 8,
+  },
+  logoText: {
+    fontSize: 28,
+    fontWeight: 'bold',
+    color: '#8B0000',
+    textAlign: 'center',
+    letterSpacing: 2,
   },
   errorTitle: {
     fontSize: 24,
