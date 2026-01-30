@@ -1,4 +1,4 @@
-package com.bosslottofresh
+package com.bosslotto
 
 import android.app.Application
 import com.facebook.react.PackageList
