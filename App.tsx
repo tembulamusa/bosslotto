@@ -6,7 +6,7 @@
  */
 
 import React, { useState } from 'react';
-import { StatusBar, StyleSheet, useColorScheme, View, Text, TouchableOpacity, Alert } from 'react-native';
+import { StatusBar, StyleSheet, useColorScheme, View, Text, TouchableOpacity, Alert, ActivityIndicator, SafeAreaView } from 'react-native';
 import { WebView } from 'react-native-webview';
 import {
   SafeAreaProvider,
@@ -14,6 +14,7 @@ import {
 
 function App() {
   const [webViewError, setWebViewError] = useState(false);
+  const [webViewLoaded, setWebViewLoaded] = useState(false);
   const [webViewKey, setWebViewKey] = useState(0);
   const isDarkMode = useColorScheme() === 'dark';
 
@@ -26,71 +27,146 @@ function App() {
       [{ text: 'Retry', onPress: handleRetry }]
     );
     setWebViewError(true);
+    setWebViewLoaded(false);
   };
 
   const handleWebViewLoadStart = () => {
     console.log('WebView loading started...');
+    setWebViewLoaded(false);
   };
 
   const handleWebViewLoadEnd = () => {
     console.log('WebView loading completed');
+    setWebViewLoaded(true);
     setWebViewError(false);
   };
 
   const handleRetry = () => {
     setWebViewError(false);
+    setWebViewLoaded(false);
     setWebViewKey(prev => prev + 1); // Force WebView re-render
   };
 
-  return (
-    <SafeAreaProvider>
-      <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
-      <View style={styles.container}>
-        {webViewError ? (
-          <View style={styles.errorContainer}>
-            <View style={styles.logoCircle}>
-              <Text style={styles.logoText}>BOSS</Text>
-            </View>
-            <Text style={styles.errorTitle}>There's no internet</Text>
-            <Text style={styles.errorMessage}>
-              Please connect to the internet to use Boss Lotto.
-            </Text>
-            <TouchableOpacity style={styles.retryButton} onPress={handleRetry}>
-              <Text style={styles.retryButtonText}>Retry</Text>
-            </TouchableOpacity>
-          </View>
-        ) : (
-          <WebView
-            key={webViewKey}
-            source={{
-              uri: 'https://boss.co.ke/',
-              headers: {
-                'User-Agent': 'Mozilla/5.0 (Linux; Android 10; Mobile) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.120 Mobile Safari/537.36'
-              }
-            }}
-            style={styles.webview}
-            javaScriptEnabled={true}
-            domStorageEnabled={true}
-            startInLoadingState={true}
-            scalesPageToFit={true}
-            cacheEnabled={false}
-            incognito={true}
-            thirdPartyCookiesEnabled={true}
-            sharedCookiesEnabled={true}
-            onError={handleWebViewError}
-            onHttpError={handleWebViewError}
-            onLoadStart={handleWebViewLoadStart}
-            onLoadEnd={handleWebViewLoadEnd}
-          />
-        )}
+  const renderLoadingView = () => (
+    <View style={styles.loadingContainer}>
+      <View style={styles.logoCircleSmall}>
+        <Text style={styles.logoTextSmall}>BOSS</Text>
       </View>
+      <ActivityIndicator size="large" color="#FFD700" />
+      <Text style={styles.loadingText}>Loading Boss Lotto...</Text>
+    </View>
+  );
+
+  const injectedJavaScript = `
+    (function() {
+      if (document.body) {
+        document.body.style.backgroundColor = '#000000';
+      }
+    })();
+    true;
+  `;
+
+  return (
+    <SafeAreaProvider style={{ backgroundColor: '#000000' }}>
+      <StatusBar barStyle="light-content" backgroundColor="#000000" />
+      <SafeAreaView style={styles.safeArea}>
+        <View style={styles.container}>
+          {webViewError ? (
+            <View style={styles.errorContainer}>
+              <View style={styles.logoCircle}>
+                <Text style={styles.logoText}>BOSS</Text>
+              </View>
+              <Text style={styles.errorTitle}>There's no internet</Text>
+              <Text style={styles.errorMessage}>
+                Please connect to the internet to use Boss Lotto.
+              </Text>
+              <TouchableOpacity style={styles.retryButton} onPress={handleRetry}>
+                <Text style={styles.retryButtonText}>Retry</Text>
+              </TouchableOpacity>
+            </View>
+          ) : (
+            <WebView
+              key={webViewKey}
+              source={{
+                uri: 'https://boss.co.ke/',
+                headers: {
+                  'User-Agent': 'Mozilla/5.0 (Linux; Android 10; Mobile) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.120 Mobile Safari/537.36'
+                }
+              }}
+              style={styles.webview}
+              containerStyle={styles.webviewContainer}
+              javaScriptEnabled={true}
+              domStorageEnabled={true}
+              startInLoadingState={true}
+              renderLoading={renderLoadingView}
+              injectedJavaScript={injectedJavaScript}
+              scalesPageToFit={true}
+              cacheEnabled={false}
+              incognito={true}
+              thirdPartyCookiesEnabled={true}
+              sharedCookiesEnabled={true}
+              onError={handleWebViewError}
+              onHttpError={handleWebViewError}
+              onLoadStart={handleWebViewLoadStart}
+              onLoadEnd={handleWebViewLoadEnd}
+              backgroundColor="#000000"
+            />
+          )}
+        </View>
+      </SafeAreaView>
     </SafeAreaProvider>
   );
 }
 
 const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: '#000000',
+  },
   container: {
     flex: 1,
+    backgroundColor: '#000000',
+  },
+  webviewContainer: {
+    flex: 1,
+    backgroundColor: '#000000',
+  },
+  webview: {
+    flex: 1,
+    backgroundColor: '#000000',
+  },
+  loadingContainer: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#000000',
+    zIndex: 1,
+  },
+  logoCircleSmall: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    backgroundColor: '#FFD700',
+    borderWidth: 3,
+    borderColor: '#B8860B',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  logoTextSmall: {
+    fontSize: 22,
+    fontWeight: 'bold',
+    color: '#8B0000',
+  },
+  loadingText: {
+    color: '#FFD700',
+    marginTop: 15,
+    fontSize: 16,
+    fontWeight: '500',
   },
   errorContainer: {
     flex: 1,
